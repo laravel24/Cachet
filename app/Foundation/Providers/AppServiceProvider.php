@@ -14,6 +14,8 @@ namespace CachetHQ\Cachet\Foundation\Providers;
 use AltThree\Bus\Dispatcher;
 use CachetHQ\Cachet\Bus\Middleware\UseDatabaseTransactions;
 use CachetHQ\Cachet\Services\Dates\DateFactory;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(Dispatcher $dispatcher)
     {
+        Schema::defaultStringLength(191);
+
         $dispatcher->mapUsing(function ($command) {
             return Dispatcher::simpleMapping($command, 'CachetHQ\Cachet\Bus', 'CachetHQ\Cachet\Bus\Handlers');
         });
@@ -42,6 +46,14 @@ class AppServiceProvider extends ServiceProvider
         Str::macro('canonicalize', function ($url) {
             return preg_replace('/([^\/])$/', '$1/', $url);
         });
+
+        Relation::morphMap([
+            'components' => \CachetHQ\Cachet\Models\Component::class,
+            'incidents'  => \CachetHQ\Cachet\Models\Incident::class,
+            'metrics'    => \CachetHQ\Cachet\Models\Metric::class,
+            'schedules'  => \CachetHQ\Cachet\Models\Schedule::class,
+            'subscriber' => \CachetHQ\Cachet\Models\Subscriber::class,
+        ]);
     }
 
     /**
